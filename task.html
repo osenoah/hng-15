@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task & Notes Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom styles & glassmorphism utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full font-sans transition-colors duration-200 flex flex-col">
+
+    <!-- App Navigation Header -->
+    <header class="sticky top-0 z-30 glass border-b border-slate-200 dark:border-slate-800 px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <!-- Logo & Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid font-bold text-xl fa-check-double"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-tight">TaskSync <span class="text-brand-500 text-xs px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-500/10 font-semibold border border-brand-200 dark:border-brand-500/20">Pro</span></h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Organize, Note & Collaborate</p>
+                </div>
+            </div>
+
+            <!-- View Switcher Tabs -->
+            <nav class="flex p-1 bg-slate-200/80 dark:bg-slate-800/80 rounded-xl text-sm font-medium">
+                <button id="tabTasksBtn" onclick="switchTab('tasks')" class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-brand-600 dark:text-white bg-white dark:bg-slate-700 shadow-sm">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Tasks</span>
+                    <span id="tasksBadge" class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-300">0</span>
+                </button>
+                <button id="tabNotesBtn" onclick="switchTab('notes')" class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <i class="fa-regular fa-sticky-note"></i>
+                    <span>Notes</span>
+                    <span id="notesBadge" class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300">0</span>
+                </button>
+            </nav>
+
+            <!-- Quick Actions / Theme Toggle -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Toggle Theme">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ==================== TASKS VIEW ==================== -->
+        <section id="tasksView" class="space-y-6 animate-fade-in">
+            <!-- Controls / Filters Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
+                <!-- Search & Filters -->
+                <div class="flex flex-wrap items-center gap-3 flex-1">
+                    <!-- Search Bar -->
+                    <div class="relative flex-1 min-w-[200px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="taskSearchInput" oninput="renderTasks()" placeholder="Search tasks..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <!-- Status Filter -->
+                    <select id="taskStatusFilter" onchange="renderTasks()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-200">
+                        <option value="all">Status: All</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                    </select>
+
+                    <!-- Priority Filter -->
+                    <select id="taskPriorityFilter" onchange="renderTasks()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-200">
+                        <option value="all">Priority: All</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+
+                    <!-- Category Filter -->
+                    <select id="taskCategoryFilter" onchange="renderTasks()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-200">
+                        <option value="all">Category: All</option>
+                        <option value="Work">Work</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Health">Health</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
+
+                <!-- Add Task Button -->
+                <button onclick="openTaskModal()" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-md shadow-brand-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Task</span>
+                </button>
+            </div>
+
+            <!-- Task Grid List -->
+            <div id="taskList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Task Cards will be rendered dynamically here -->
+            </div>
+
+            <!-- Task Empty State -->
+            <div id="emptyTasksState" class="hidden flex-col items-center justify-center py-16 text-center">
+                <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400 mb-4 text-3xl">
+                    <i class="fa-regular fa-clipboard"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700 dark:text-slate-300 text-lg">No tasks found</h3>
+                <p class="text-slate-500 text-sm max-w-sm mt-1">Get started by creating a new task or resetting your current search filters.</p>
+            </div>
+        </section>
+
+        <!-- ==================== NOTES VIEW ==================== -->
+        <section id="notesView" class="hidden space-y-6 animate-fade-in">
+            <!-- Notes Controls -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
+                <!-- Search Notes -->
+                <div class="relative flex-1 max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="noteSearchInput" oninput="renderNotes()" placeholder="Search notes..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <!-- Create Note Button -->
+                <button onclick="openNoteModal()" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Create Note</span>
+                </button>
+            </div>
+
+            <!-- Notes Grid -->
+            <div id="notesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Note Cards will be rendered dynamically here -->
+            </div>
+
+            <!-- Notes Empty State -->
+            <div id="emptyNotesState" class="hidden flex-col items-center justify-center py-16 text-center">
+                <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400 mb-4 text-3xl">
+                    <i class="fa-regular fa-note-sticky"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700 dark:text-slate-300 text-lg">No notes found</h3>
+                <p class="text-slate-500 text-sm max-w-sm mt-1">Capture your thoughts, ideas, or reminders by creating your first note.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODALS & DIALOGS ==================== -->
+
+    <!-- Task Create/Edit Modal -->
+    <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/80">
+                <h3 id="taskModalTitle" class="font-bold text-slate-800 dark:text-white text-lg">Add New Task</h3>
+                <button onclick="closeTaskModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="taskForm" onsubmit="handleTaskSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="taskId">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Title *</label>
+                    <input type="text" id="taskTitle" required placeholder="What needs to be done?" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Priority</label>
+                        <select id="taskPriority" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Category</label>
+                        <select id="taskCategory" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="General">General</option>
+                            <option value="Work">Work</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Health">Health</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Due Date</label>
+                        <input type="date" id="taskDueDate" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Description / Subnotes</label>
+                    <textarea id="taskDescription" rows="3" placeholder="Add extra context or instructions..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700/80">
+                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium shadow-md">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Note Create/Edit Modal -->
+    <div id="noteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/80">
+                <h3 id="noteModalTitle" class="font-bold text-slate-800 dark:text-white text-lg">Create New Note</h3>
+                <button onclick="closeNoteModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="noteForm" onsubmit="handleNoteSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="noteId">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Title *</label>
+                    <input type="text" id="noteTitle" required placeholder="Note Headline" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Theme Accent</label>
+                    <div class="flex items-center gap-3" id="colorPickerContainer">
+                        <!-- Color radio options populated dynamically -->
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Content *</label>
+                    <textarea id="noteBody" required rows="6" placeholder="Write your note here..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700/80">
+                    <button type="button" onclick="closeNoteModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium shadow-md">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Social Task Share Modal -->
+    <div id="shareModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/80">
+                <div class="flex items-center gap-2 text-brand-600 dark:text-brand-400">
+                    <i class="fa-solid fa-share-nodes text-lg"></i>
+                    <h3 class="font-bold text-slate-800 dark:text-white text-lg">Share Task</h3>
+                </div>
+                <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-5">
+                <!-- Preview Box -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Formatted Preview</label>
+                    <div id="sharePreview" class="p-3.5 bg-slate-100 dark:bg-slate-900/90 rounded-xl text-xs font-mono text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 leading-relaxed break-words">
+                        <!-- Dynamic task share summary will appear here -->
+                    </div>
+                </div>
+
+                <!-- Native Mobile Share Fallback Trigger -->
+                <div id="nativeShareContainer" class="hidden">
+                    <button onclick="triggerNativeShare()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:opacity-95">
+                        <i class="fa-solid fa-mobile-screen"></i>
+                        <span>Open Mobile Share Sheet</span>
+                    </button>
+                    <div class="relative my-4">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
+                        <div class="relative flex justify-center text-xs uppercase"><span class="bg-white dark:bg-slate-800 px-2 text-slate-400">or share directly to</span></div>
+                    </div>
+                </div>
+
+                <!-- Social Quick Action Buttons -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <button onclick="shareToPlatform('whatsapp')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 text-xs font-semibold transition-colors">
+                        <i class="fa-brands fa-whatsapp text-base"></i>
+                        <span>WhatsApp</span>
+                    </button>
+                    
+                    <button onclick="shareToPlatform('twitter')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-sky-500/10 text-sky-500 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 text-xs font-semibold transition-colors">
+                        <i class="fa-brands fa-x-twitter text-base"></i>
+                        <span>X / Twitter</span>
+                    </button>
+
+                    <button onclick="shareToPlatform('telegram')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 text-xs font-semibold transition-colors">
+                        <i class="fa-brands fa-telegram text-base"></i>
+                        <span>Telegram</span>
+                    </button>
+
+                    <button onclick="shareToPlatform('facebook')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 text-xs font-semibold transition-colors">
+                        <i class="fa-brands fa-facebook text-base"></i>
+                        <span>Facebook</span>
+                    </button>
+
+                    <button onclick="shareToPlatform('email')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-300 border border-slate-500/20 hover:bg-slate-500/20 text-xs font-semibold transition-colors">
+                        <i class="fa-solid fa-envelope text-base"></i>
+                        <span>Email</span>
+                    </button>
+
+                    <button onclick="copyShareContent()" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 hover:bg-brand-500/20 text-xs font-semibold transition-colors">
+                        <i class="fa-regular fa-copy text-base"></i>
+                        <span>Copy Text</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Management
+        let tasks = JSON.parse(localStorage.getItem('tasks_hub_data')) || [
+            {
+                id: '1',
+                title: 'Review Project Proposal',
+                priority: 'High',
+                category: 'Work',
+                dueDate: '2026-10-15',
+                description: 'Check budget allocations and timelines with partner team before final send-off.',
+                completed: false,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '2',
+                title: 'Grocery Shopping',
+                priority: 'Medium',
+                category: 'Shopping',
+                dueDate: '',
+                description: 'Oat milk, Whole grain bread, Avocados, Fresh berries.',
+                completed: true,
+                createdAt: new Date().toISOString()
+            }
+        ];
+
+        let notes = JSON.parse(localStorage.getItem('notes_hub_data')) || [
+            {
+                id: '1',
+                title: 'App Ideas & Roadmap 🚀',
+                body: 'Features to explore:\n1. Dark mode themes\n2. Real-time synchronization\n3. Export data as JSON/PDF.',
+                color: 'indigo',
+                pinned: true,
+                updatedAt: new Date().toISOString()
+            }
+        ];
+
+        let activeTab = 'tasks';
+        let activeShareTask = null;
+
+        // Note Color Palettes
+        const noteColors = [
+            { id: 'indigo', border: 'border-indigo-400', bg: 'bg-indigo-50/50 dark:bg-indigo-950/20', circle: 'bg-indigo-500' },
+            { id: 'emerald', border: 'border-emerald-400', bg: 'bg-emerald-50/50 dark:bg-emerald-950/20', circle: 'bg-emerald-500' },
+            { id: 'amber', border: 'border-amber-400', bg: 'bg-amber-50/50 dark:bg-amber-950/20', circle: 'bg-amber-500' },
+            { id: 'rose', border: 'border-rose-400', bg: 'bg-rose-50/50 dark:bg-rose-950/20', circle: 'bg-rose-500' },
+            { id: 'slate', border: 'border-slate-400', bg: 'bg-slate-50/50 dark:bg-slate-900/50', circle: 'bg-slate-500' }
+        ];
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initNoteColors();
+            renderTasks();
+            renderNotes();
+            updateBadges();
+
+            // Check Native Share API availability
+            if (navigator.share) {
+                document.getElementById('nativeShareContainer').classList.remove('hidden');
+            }
+        });
+
+        // Local Storage Sync
+        function saveTasks() {
+            localStorage.setItem('tasks_hub_data', JSON.stringify(tasks));
+            updateBadges();
+        }
+
+        function saveNotes() {
+            localStorage.setItem('notes_hub_data', JSON.stringify(notes));
+            updateBadges();
+        }
+
+        // Theme Switcher
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
+            }
+        }
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+            }
+        }
+
+        // Tab Navigation
+        function switchTab(tab) {
+            activeTab = tab;
+            const tasksView = document.getElementById('tasksView');
+            const notesView = document.getElementById('notesView');
+            const tabTasksBtn = document.getElementById('tabTasksBtn');
+            const tabNotesBtn = document.getElementById('tabNotesBtn');
+
+            if (tab === 'tasks') {
+                tasksView.classList.remove('hidden');
+                notesView.classList.add('hidden');
+                
+                tabTasksBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-brand-600 dark:text-white bg-white dark:bg-slate-700 shadow-sm';
+                tabNotesBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+            } else {
+                tasksView.classList.add('hidden');
+                notesView.classList.remove('hidden');
+
+                tabNotesBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-emerald-600 dark:text-white bg-white dark:bg-slate-700 shadow-sm';
+                tabTasksBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+            }
+        }
+
+        function updateBadges() {
+            document.getElementById('tasksBadge').textContent = tasks.filter(t => !t.completed).length;
+            document.getElementById('notesBadge').textContent = notes.length;
+        }
+
+        // ==================== TASKS LOGIC ====================
+        function renderTasks() {
+            const container = document.getElementById('taskList');
+            const emptyState = document.getElementById('emptyTasksState');
+            
+            const searchQuery = document.getElementById('taskSearchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('taskStatusFilter').value;
+            const priorityFilter = document.getElementById('taskPriorityFilter').value;
+            const categoryFilter = document.getElementById('taskCategoryFilter').value;
+
+            const filtered = tasks.filter(task => {
+                const matchesSearch = task.title.toLowerCase().includes(searchQuery) || task.description.toLowerCase().includes(searchQuery);
+                const matchesStatus = statusFilter === 'all' ? true : (statusFilter === 'completed' ? task.completed : !task.completed);
+                const matchesPriority = priorityFilter === 'all' ? true : task.priority === priorityFilter;
+                const matchesCategory = categoryFilter === 'all' ? true : task.category === categoryFilter;
+
+                return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            container.innerHTML = filtered.map(task => {
+                const priorityClasses = {
+                    'High': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+                    'Medium': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                    'Low': 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20'
+                }[task.priority] || 'bg-slate-500/10 text-slate-600';
+
+                return `
+                    <div class="group bg-white dark:bg-slate-800/90 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative ${task.completed ? 'opacity-70' : ''}">
+                        <div>
+                            <!-- Header Info -->
+                            <div class="flex items-start justify-between gap-2 mb-3">
+                                <div class="flex flex-wrap gap-1.5 items-center">
+                                    <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${priorityClasses}">
+                                        ${task.priority}
+                                    </span>
+                                    <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                                        <i class="fa-regular fa-folder text-[10px] mr-1"></i>${task.category}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                                    <button onclick="openShareModal('${task.id}')" title="Share Task" class="p-1.5 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                        <i class="fa-solid fa-share-nodes text-sm"></i>
+                                    </button>
+                                    <button onclick="openTaskModal('${task.id}')" title="Edit Task" class="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                        <i class="fa-regular fa-pen-to-square text-sm"></i>
+                                    </button>
+                                    <button onclick="deleteTask('${task.id}')" title="Delete Task" class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                        <i class="fa-regular fa-trash-can text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="flex items-start gap-3 mb-2">
+                                <button onclick="toggleTaskStatus('${task.id}')" class="mt-0.5 text-lg text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus:outline-none">
+                                    <i class="${task.completed ? 'fa-solid fa-circle-check text-brand-600 dark:text-brand-400' : 'fa-regular fa-circle'}"></i>
+                                </button>
+                                <h4 class="font-semibold text-slate-800 dark:text-slate-100 leading-snug ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">
+                                    ${escapeHtml(task.title)}
+                                </h4>
+                            </div>
+
+                            ${task.description ? `<p class="text-xs text-slate-500 dark:text-slate-400 ml-7 line-clamp-3 mb-3 leading-relaxed">${escapeHtml(task.description)}</p>` : ''}
+                        </div>
+
+                        <!-- Footer -->
+                        ${task.dueDate ? `
+                            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/50 flex items-center text-[11px] text-slate-400">
+                                <i class="fa-regular fa-calendar-check mr-1.5"></i>
+                                <span>Due: ${task.dueDate}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleTaskStatus(id) {
+            tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+            saveTasks();
+            renderTasks();
+            showToast('Task status updated');
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            renderTasks();
+            showToast('Task removed', 'error');
+        }
+
+        function openTaskModal(taskId = null) {
+            const modal = document.getElementById('taskModal');
+            const form = document.getElementById('taskForm');
+            const titleEl = document.getElementById('taskModalTitle');
+
+            form.reset();
+            
+            if (taskId) {
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    titleEl.textContent = 'Edit Task';
+                    document.getElementById('taskId').value = task.id;
+                    document.getElementById('taskTitle').value = task.title;
+                    document.getElementById('taskPriority').value = task.priority;
+                    document.getElementById('taskCategory').value = task.category;
+                    document.getElementById('taskDueDate').value = task.dueDate || '';
+                    document.getElementById('taskDescription').value = task.description || '';
+                }
+            } else {
+                titleEl.textContent = 'Add New Task';
+                document.getElementById('taskId').value = '';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+        }
+
+        function handleTaskSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('taskId').value;
+            const title = document.getElementById('taskTitle').value.trim();
+            const priority = document.getElementById('taskPriority').value;
+            const category = document.getElementById('taskCategory').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            const description = document.getElementById('taskDescription').value.trim();
+
+            if (!title) return;
+
+            if (id) {
+                // Edit existing
+                tasks = tasks.map(t => t.id === id ? { ...t, title, priority, category, dueDate, description } : t);
+                showToast('Task updated successfully!');
+            } else {
+                // Add new
+                const newTask = {
+                    id: Date.now().toString(),
+                    title,
+                    priority,
+                    category,
+                    dueDate,
+                    description,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+                tasks.unshift(newTask);
+                showToast('New task added!');
+            }
+
+            saveTasks();
+            renderTasks();
+            closeTaskModal();
+        }
+
+        // ==================== SHARE FEATURE ====================
+        function getTaskShareText(task) {
+            let text = `📋 Task: ${task.title}\n`;
+            text += `⚡ Priority: ${task.priority}\n`;
+            text += `📁 Category: ${task.category}\n`;
+            if (task.dueDate) text += `📅 Due: ${task.dueDate}\n`;
+            if (task.description) text += `📝 Notes: ${task.description}\n`;
+            text += `\nShared via TaskSync Pro`;
+            return text;
+        }
+
+        function openShareModal(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            activeShareTask = task;
+            const previewEl = document.getElementById('sharePreview');
+            previewEl.textContent = getTaskShareText(task);
+
+            document.getElementById('shareModal').classList.remove('hidden');
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+            activeShareTask = null;
+        }
+
+        function triggerNativeShare() {
+            if (!activeShareTask || !navigator.share) return;
+
+            navigator.share({
+                title: `Task: ${activeShareTask.title}`,
+                text: getTaskShareText(activeShareTask),
+            }).catch(console.error);
+        }
+
+        function shareToPlatform(platform) {
+            if (!activeShareTask) return;
+
+            const text = encodeURIComponent(getTaskShareText(activeShareTask));
+            let url = '';
+
+            switch (platform) {
+                case 'whatsapp':
+                    url = `https://api.whatsapp.com/send?text=${text}`;
+                    break;
+                case 'twitter':
+                    url = `https://twitter.com/intent/tweet?text=${text}`;
+                    break;
+                case 'telegram':
+                    url = `https://t.me/share/url?url=&text=${text}`;
+                    break;
+                case 'facebook':
+                    url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${text}`;
+                    break;
+                case 'email':
+                    url = `mailto:?subject=${encodeURIComponent('Shared Task: ' + activeShareTask.title)}&body=${text}`;
+                    break;
+            }
+
+            if (url) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        }
+
+        function copyShareContent() {
+            if (!activeShareTask) return;
+
+            const text = getTaskShareText(activeShareTask);
+            
+            // Clipboard fallback logic
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Share text copied to clipboard!');
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Share text copied to clipboard!');
+            } catch (err) {
+                showToast('Failed to copy', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // ==================== NOTES LOGIC ====================
+        function initNoteColors() {
+            const container = document.getElementById('colorPickerContainer');
+            container.innerHTML = noteColors.map((c, index) => `
+                <label class="cursor-pointer">
+                    <input type="radio" name="noteColor" value="${c.id}" ${index === 0 ? 'checked' : ''} class="sr-only peer">
+                    <div class="w-7 h-7 rounded-full ${c.circle} peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-brand-500 transition-all"></div>
+                </label>
+            `).join('');
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notesList');
+            const emptyState = document.getElementById('emptyNotesState');
+            const searchQuery = document.getElementById('noteSearchInput').value.toLowerCase();
+
+            const filtered = notes.filter(note => {
+                return note.title.toLowerCase().includes(searchQuery) || note.body.toLowerCase().includes(searchQuery);
+            }).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            container.innerHTML = filtered.map(note => {
+                const colorTheme = noteColors.find(c => c.id === note.color) || noteColors[0];
+
+                return `
+                    <div class="group ${colorTheme.bg} rounded-2xl p-5 border ${colorTheme.border} shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative">
+                        <div>
+                            <!-- Header -->
+                            <div class="flex items-start justify-between gap-2 mb-2">
+                                <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base leading-snug break-words flex-1">
+                                    ${escapeHtml(note.title)}
+                                </h4>
+                                <div class="flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                                    <button onclick="togglePinNote('${note.id}')" title="${note.pinned ? 'Unpin' : 'Pin'}" class="p-1.5 ${note.pinned ? 'text-amber-500' : 'text-slate-400 hover:text-amber-500'} rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <i class="fa-solid fa-thumbtack text-xs"></i>
+                                    </button>
+                                    <button onclick="openNoteModal('${note.id}')" title="Edit Note" class="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <i class="fa-regular fa-pen-to-square text-xs"></i>
+                                    </button>
+                                    <button onclick="deleteNote('${note.id}')" title="Delete Note" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <i class="fa-regular fa-trash-can text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <p class="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed mb-4">
+                                ${escapeHtml(note.body)}
+                            </p>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="text-[10px] text-slate-400 pt-2 border-t border-slate-200/50 dark:border-slate-700/30 flex items-center justify-between">
+                            <span>Updated: ${new Date(note.updatedAt).toLocaleDateString()}</span>
+                            ${note.pinned ? '<span class="text-amber-500 font-semibold"><i class="fa-solid fa-thumbtack mr-1"></i>Pinned</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function togglePinNote(id) {
+            notes = notes.map(n => n.id === id ? { ...n, pinned: !n.pinned } : n);
+            saveNotes();
+            renderNotes();
+        }
+
+        function deleteNote(id) {
+            notes = notes.filter(n => n.id !== id);
+            saveNotes();
+            renderNotes();
+            showToast('Note deleted', 'error');
+        }
+
+        function openNoteModal(noteId = null) {
+            const modal = document.getElementById('noteModal');
+            const form = document.getElementById('noteForm');
+            const titleEl = document.getElementById('noteModalTitle');
+
+            form.reset();
+
+            if (noteId) {
+                const note = notes.find(n => n.id === noteId);
+                if (note) {
+                    titleEl.textContent = 'Edit Note';
+                    document.getElementById('noteId').value = note.id;
+                    document.getElementById('noteTitle').value = note.title;
+                    document.getElementById('noteBody').value = note.body;
+                    
+                    const radio = form.querySelector(`input[name="noteColor"][value="${note.color}"]`);
+                    if (radio) radio.checked = true;
+                }
+            } else {
+                titleEl.textContent = 'Create New Note';
+                document.getElementById('noteId').value = '';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.add('hidden');
+        }
+
+        function handleNoteSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('noteId').value;
+            const title = document.getElementById('noteTitle').value.trim();
+            const body = document.getElementById('noteBody').value.trim();
+            const color = document.querySelector('input[name="noteColor"]:checked')?.value || 'indigo';
+
+            if (!title || !body) return;
+
+            if (id) {
+                notes = notes.map(n => n.id === id ? { ...n, title, body, color, updatedAt: new Date().toISOString() } : n);
+                showToast('Note updated!');
+            } else {
+                const newNote = {
+                    id: Date.now().toString(),
+                    title,
+                    body,
+                    color,
+                    pinned: false,
+                    updatedAt: new Date().toISOString()
+                };
+                notes.unshift(newNote);
+                showToast('Note saved!');
+            }
+
+            saveNotes();
+            renderNotes();
+            closeNoteModal();
+        }
+
+        // Helper Functions
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const bgClass = type === 'success' 
+                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900' 
+                : 'bg-rose-600 text-white';
+
+            toast.className = `${bgClass} text-xs font-medium px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `
+                <i class="${type === 'success' ? 'fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600' : 'fa-solid fa-circle-exclamation'}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // Animate out
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
