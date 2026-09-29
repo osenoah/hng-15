@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task & Notes Hub</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +33,6 @@
     </script>
     
     <style>
-        /* Custom styles & glassmorphism utilities */
         .glass {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
@@ -50,7 +46,7 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
         
-        /* Custom scrollbars */
+        
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -66,7 +62,7 @@
             background: #334155;
         }
         
-        /* Animations */
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
@@ -78,21 +74,19 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full font-sans transition-colors duration-200 flex flex-col">
 
-    <!-- App Navigation Header -->
     <header class="sticky top-0 z-30 glass border-b border-slate-200 dark:border-slate-800 px-4 lg:px-8 py-3">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <!-- Logo & Brand -->
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
                     <i class="fa-solid font-bold text-xl fa-check-double"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-tight">TaskSync <span class="text-brand-500 text-xs px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-500/10 font-semibold border border-brand-200 dark:border-brand-500/20">Pro</span></h1>
+                    <h1 class="font-bold text-lg leading-tight tracking-tight">hng15-Task</h1>
                     <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Organize, Note & Collaborate</p>
                 </div>
             </div>
 
-            <!-- View Switcher Tabs -->
+            
             <nav class="flex p-1 bg-slate-200/80 dark:bg-slate-800/80 rounded-xl text-sm font-medium">
                 <button id="tabTasksBtn" onclick="switchTab('tasks')" class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-brand-600 dark:text-white bg-white dark:bg-slate-700 shadow-sm">
                     <i class="fa-solid fa-list-check"></i>
@@ -106,7 +100,6 @@
                 </button>
             </nav>
 
-            <!-- Quick Actions / Theme Toggle -->
             <div class="flex items-center gap-2">
                 <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Toggle Theme">
                     <i id="themeIcon" class="fa-solid fa-moon"></i>
@@ -115,29 +108,27 @@
         </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-
-        <!-- ==================== TASKS VIEW ==================== -->
+   
         <section id="tasksView" class="space-y-6 animate-fade-in">
-            <!-- Controls / Filters Header -->
+            
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
-                <!-- Search & Filters -->
+                
                 <div class="flex flex-wrap items-center gap-3 flex-1">
-                    <!-- Search Bar -->
+                    
                     <div class="relative flex-1 min-w-[200px]">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <input type="text" id="taskSearchInput" oninput="renderTasks()" placeholder="Search tasks..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
 
-                    <!-- Status Filter -->
+                    
                     <select id="taskStatusFilter" onchange="renderTasks()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-200">
                         <option value="all">Status: All</option>
                         <option value="active">Active</option>
                         <option value="completed">Completed</option>
                     </select>
 
-                    <!-- Priority Filter -->
+                    
                     <select id="taskPriorityFilter" onchange="renderTasks()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-200">
                         <option value="all">Priority: All</option>
                         <option value="High">High</option>
@@ -145,7 +136,7 @@
                         <option value="Low">Low</option>
                     </select>
 
-                    <!-- Category Filter -->
+                    
                     <select id="taskCategoryFilter" onchange="renderTasks()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-200">
                         <option value="all">Category: All</option>
                         <option value="Work">Work</option>
@@ -156,19 +147,19 @@
                     </select>
                 </div>
 
-                <!-- Add Task Button -->
+                
                 <button onclick="openTaskModal()" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-md shadow-brand-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
                     <i class="fa-solid fa-plus"></i>
                     <span>New Task</span>
                 </button>
             </div>
 
-            <!-- Task Grid List -->
+            
             <div id="taskList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Task Cards will be rendered dynamically here -->
+                
             </div>
 
-            <!-- Task Empty State -->
+            
             <div id="emptyTasksState" class="hidden flex-col items-center justify-center py-16 text-center">
                 <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400 mb-4 text-3xl">
                     <i class="fa-regular fa-clipboard"></i>
@@ -178,29 +169,29 @@
             </div>
         </section>
 
-        <!-- ==================== NOTES VIEW ==================== -->
+        
         <section id="notesView" class="hidden space-y-6 animate-fade-in">
-            <!-- Notes Controls -->
+            
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
-                <!-- Search Notes -->
+                
                 <div class="relative flex-1 max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                     <input type="text" id="noteSearchInput" oninput="renderNotes()" placeholder="Search notes..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
 
-                <!-- Create Note Button -->
+                
                 <button onclick="openNoteModal()" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
                     <i class="fa-solid fa-plus"></i>
                     <span>Create Note</span>
                 </button>
             </div>
 
-            <!-- Notes Grid -->
+            
             <div id="notesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Note Cards will be rendered dynamically here -->
+                
             </div>
 
-            <!-- Notes Empty State -->
+            
             <div id="emptyNotesState" class="hidden flex-col items-center justify-center py-16 text-center">
                 <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400 mb-4 text-3xl">
                     <i class="fa-regular fa-note-sticky"></i>
@@ -212,9 +203,9 @@
 
     </main>
 
-    <!-- ==================== MODALS & DIALOGS ==================== -->
+    
 
-    <!-- Task Create/Edit Modal -->
+    
     <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden animate-fade-in">
         <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/80">
@@ -271,7 +262,7 @@
         </div>
     </div>
 
-    <!-- Note Create/Edit Modal -->
+    
     <div id="noteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden animate-fade-in">
         <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/80">
@@ -291,7 +282,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Theme Accent</label>
                     <div class="flex items-center gap-3" id="colorPickerContainer">
-                        <!-- Color radio options populated dynamically -->
+                        
                     </div>
                 </div>
 
@@ -308,7 +299,7 @@
         </div>
     </div>
 
-    <!-- Social Task Share Modal -->
+    
     <div id="shareModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden animate-fade-in">
         <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/80">
@@ -322,15 +313,15 @@
             </div>
             
             <div class="p-6 space-y-5">
-                <!-- Preview Box -->
+                
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Formatted Preview</label>
                     <div id="sharePreview" class="p-3.5 bg-slate-100 dark:bg-slate-900/90 rounded-xl text-xs font-mono text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 leading-relaxed break-words">
-                        <!-- Dynamic task share summary will appear here -->
+                        
                     </div>
                 </div>
 
-                <!-- Native Mobile Share Fallback Trigger -->
+                
                 <div id="nativeShareContainer" class="hidden">
                     <button onclick="triggerNativeShare()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:opacity-95">
                         <i class="fa-solid fa-mobile-screen"></i>
@@ -342,7 +333,7 @@
                     </div>
                 </div>
 
-                <!-- Social Quick Action Buttons -->
+                
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <button onclick="shareToPlatform('whatsapp')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 text-xs font-semibold transition-colors">
                         <i class="fa-brands fa-whatsapp text-base"></i>
@@ -378,12 +369,12 @@
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
+    
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- JavaScript Application Logic -->
+    
     <script>
-        // State Management
+        
         let tasks = JSON.parse(localStorage.getItem('tasks_hub_data')) || [
             {
                 id: '1',
@@ -421,7 +412,7 @@
         let activeTab = 'tasks';
         let activeShareTask = null;
 
-        // Note Color Palettes
+        
         const noteColors = [
             { id: 'indigo', border: 'border-indigo-400', bg: 'bg-indigo-50/50 dark:bg-indigo-950/20', circle: 'bg-indigo-500' },
             { id: 'emerald', border: 'border-emerald-400', bg: 'bg-emerald-50/50 dark:bg-emerald-950/20', circle: 'bg-emerald-500' },
@@ -430,7 +421,7 @@
             { id: 'slate', border: 'border-slate-400', bg: 'bg-slate-50/50 dark:bg-slate-900/50', circle: 'bg-slate-500' }
         ];
 
-        // Initialization
+        
         window.addEventListener('DOMContentLoaded', () => {
             initTheme();
             initNoteColors();
@@ -438,13 +429,13 @@
             renderNotes();
             updateBadges();
 
-            // Check Native Share API availability
+            
             if (navigator.share) {
                 document.getElementById('nativeShareContainer').classList.remove('hidden');
             }
         });
 
-        // Local Storage Sync
+        
         function saveTasks() {
             localStorage.setItem('tasks_hub_data', JSON.stringify(tasks));
             updateBadges();
@@ -455,7 +446,7 @@
             updateBadges();
         }
 
-        // Theme Switcher
+        
         function initTheme() {
             if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
@@ -478,7 +469,7 @@
             }
         }
 
-        // Tab Navigation
+        
         function switchTab(tab) {
             activeTab = tab;
             const tasksView = document.getElementById('tasksView');
@@ -506,7 +497,7 @@
             document.getElementById('notesBadge').textContent = notes.length;
         }
 
-        // ==================== TASKS LOGIC ====================
+        
         function renderTasks() {
             const container = document.getElementById('taskList');
             const emptyState = document.getElementById('emptyTasksState');
@@ -545,7 +536,7 @@
                 return `
                     <div class="group bg-white dark:bg-slate-800/90 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative ${task.completed ? 'opacity-70' : ''}">
                         <div>
-                            <!-- Header Info -->
+                            
                             <div class="flex items-start justify-between gap-2 mb-3">
                                 <div class="flex flex-wrap gap-1.5 items-center">
                                     <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${priorityClasses}">
@@ -568,7 +559,7 @@
                                 </div>
                             </div>
 
-                            <!-- Content -->
+                            
                             <div class="flex items-start gap-3 mb-2">
                                 <button onclick="toggleTaskStatus('${task.id}')" class="mt-0.5 text-lg text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus:outline-none">
                                     <i class="${task.completed ? 'fa-solid fa-circle-check text-brand-600 dark:text-brand-400' : 'fa-regular fa-circle'}"></i>
@@ -581,7 +572,7 @@
                             ${task.description ? `<p class="text-xs text-slate-500 dark:text-slate-400 ml-7 line-clamp-3 mb-3 leading-relaxed">${escapeHtml(task.description)}</p>` : ''}
                         </div>
 
-                        <!-- Footer -->
+                        
                         ${task.dueDate ? `
                             <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/50 flex items-center text-[11px] text-slate-400">
                                 <i class="fa-regular fa-calendar-check mr-1.5"></i>
@@ -649,11 +640,11 @@
             if (!title) return;
 
             if (id) {
-                // Edit existing
+                
                 tasks = tasks.map(t => t.id === id ? { ...t, title, priority, category, dueDate, description } : t);
                 showToast('Task updated successfully!');
             } else {
-                // Add new
+                
                 const newTask = {
                     id: Date.now().toString(),
                     title,
@@ -673,7 +664,7 @@
             closeTaskModal();
         }
 
-        // ==================== SHARE FEATURE ====================
+        
         function getTaskShareText(task) {
             let text = `📋 Task: ${task.title}\n`;
             text += `⚡ Priority: ${task.priority}\n`;
@@ -743,7 +734,7 @@
 
             const text = getTaskShareText(activeShareTask);
             
-            // Clipboard fallback logic
+            
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
                     showToast('Share text copied to clipboard!');
@@ -769,7 +760,7 @@
             document.body.removeChild(textArea);
         }
 
-        // ==================== NOTES LOGIC ====================
+        
         function initNoteColors() {
             const container = document.getElementById('colorPickerContainer');
             container.innerHTML = noteColors.map((c, index) => `
@@ -805,7 +796,7 @@
                 return `
                     <div class="group ${colorTheme.bg} rounded-2xl p-5 border ${colorTheme.border} shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative">
                         <div>
-                            <!-- Header -->
+                            
                             <div class="flex items-start justify-between gap-2 mb-2">
                                 <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base leading-snug break-words flex-1">
                                     ${escapeHtml(note.title)}
@@ -823,13 +814,13 @@
                                 </div>
                             </div>
 
-                            <!-- Body -->
+                            
                             <p class="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed mb-4">
                                 ${escapeHtml(note.body)}
                             </p>
                         </div>
 
-                        <!-- Footer -->
+                        
                         <div class="text-[10px] text-slate-400 pt-2 border-t border-slate-200/50 dark:border-slate-700/30 flex items-center justify-between">
                             <span>Updated: ${new Date(note.updatedAt).toLocaleDateString()}</span>
                             ${note.pinned ? '<span class="text-amber-500 font-semibold"><i class="fa-solid fa-thumbtack mr-1"></i>Pinned</span>' : ''}
@@ -912,7 +903,7 @@
             closeNoteModal();
         }
 
-        // Helper Functions
+        
         function escapeHtml(str) {
             return str.replace(/[&<>"']/g, function(m) {
                 return {
